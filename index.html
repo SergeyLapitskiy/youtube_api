@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Your awesome Youtube search engine</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Awesome videos!" />
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+        <header>
+            <h1 class="w100 text-center" id='panel'>YouTube API</h1>
+        </header>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <form action="#">
+                  <p class="werasdf"></p>
+                    <p><input type="text" id="search" placeholder="Type something..." autocomplete="off" class="form-control" /></p>
+                    <p><input type="submit" value="Искать" class="form-control btn btn-primary w100"></p>
+                </form>
+                <div id="results"></div>
+            </div>
+        </div>
+
+        <!-- scripts -->
+        <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+        <script>
+
+        function tplawesome(e,t){
+          res=e;
+          for(var n=0;n<t.length;n++){
+              res = res.replace(/\{\{(.*?)\}\}/g,function(e,r){return t[n][r]})
+          }
+              return res
+
+        }
+
+        $(function() {
+            $("form").on("submit", function(e) {
+               e.preventDefault();
+               // prepare the request
+               var request = gapi.client.youtube.search.list({
+                    part: "snippet",
+                    type: "video",
+                    q: $("#search").val().replace(/%20/g, "+"),
+                    maxResults: 20,
+                    order: "date",
+               });
+
+
+               // execute the request
+               request.execute(function(response) {
+                  var results = response.result;
+                  var allData = [];
+
+                  var request2 = gapi.client.youtube.videos.list({
+                    part: 'statistics',
+                    id: concotanateID(),
+                  });
+
+                  function concotanateID() {
+                    var arr = [];
+                    for (var i = 0; i < results.items.length; i++) {
+                      arr.push(results.items[i].id.videoId);
+                    }
+                    return arr.join(',');
+                  }
+
+                  request2.execute(function(response) {
+
+                   for (let i = 0; i < results.items.length; i++) {
+                     allData[i] = {
+                       search: results.items[i],
+                       statistics: response.items[i].statistics
+                     };
+                   }
+
+                   allData.sort(function(a, b) {
+                     return parseFloat(b.statistics.viewCount) - parseFloat(a.statistics.viewCount);
+                   });
+
+                   $("#results").html("");
+                   $.each(allData, function(index, item) {
+                     $.get("tpl/item.html", function(data) {
+                         $("#results").append(
+                           tplawesome(data, [{"title":item.search.snippet.title,
+                                              "videoid":item.search.id.videoId,
+                                              "author":item.search.snippet.channelTitle,
+                                              "date":new Date(item.search.snippet.publishedAt).toLocaleString()}]));
+                           if(index == 19){
+                             $(".video.w100").hide();
+                             $(".video_title").each(function(index, item) {
+                               $(this).on("click", function(){
+                                 if($(".video.w100").eq(index).is(':hidden'))
+                                 $(".video.w100").eq(index).show();
+                                 else $(".video.w100").eq(index).hide();
+                               });
+                             });
+                           }
+                     });
+                   });
+
+                  });
+
+
+
+
+                  resetVideoHeight();
+               });
+            });
+
+            $(window).on("resize", resetVideoHeight);
+        });
+
+
+        function concotanateID() {
+          var arr = [];
+          for (var i = 0; i < data.items.length; i++) {
+              arr.push(data.items[i].id.videoId);
+          }
+          return arr.join(',');
+        }
+
+        function resetVideoHeight() {
+            $(".video").css("height", $("#results").width() * 9/16);
+        }
+
+
+        function init() {
+            gapi.client.setApiKey("AIzaSyBoNbeY19HXH20Om3nOwJj4LwlK3RbROn8");
+            gapi.client.load("youtube", "v3", function() {
+                // yt api is ready
+            });
+        }
+</script>
+
+        <script src="https://apis.google.com/js/client.js?onload=init"></script>
+    </body>
+</html>
