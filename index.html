@@ -17,7 +17,12 @@
                 <form action="#">
                   <p class="werasdf"></p>
                     <p><input type="text" id="search" placeholder="Type something..." autocomplete="off" class="form-control" /></p>
+<<<<<<< HEAD
                     <p><input type="submit" value="Искать" class="form-control btn btn-primary w100"></p>
+=======
+                    <p><input type="submit" value="Искать" class="form-control btn btn-primary w70">
+                    <input type="button" id="button_change" value="1 cписок" class="form-control btn btn-primary w20"></p>
+>>>>>>> init
                 </form>
                 <div id="results"></div>
             </div>
@@ -37,9 +42,31 @@
         }
 
         $(function() {
+<<<<<<< HEAD
             $("form").on("submit", function(e) {
                e.preventDefault();
                // prepare the request
+=======
+            $("#button_change").click(function(){
+              if($(this).prop("value") == "1 cписок"){
+                $(this).prop('value', '2 cписок');
+              }
+              else $(this).prop('value', '1 cписок');
+              $("#search").val("");
+              $("#results").html("");
+            });
+
+            $("form").on("submit", function(e) {
+               e.preventDefault();
+               // prepare the request
+               if($(this).prop("value") == "1 cписок"){
+                 createRequest1();
+               }
+               else {
+
+               }
+
+>>>>>>> init
                var request = gapi.client.youtube.search.list({
                     part: "snippet",
                     type: "video",
@@ -52,6 +79,7 @@
                // execute the request
                request.execute(function(response) {
                   var results = response.result;
+<<<<<<< HEAD
                   var allData = [];
 
                   var request2 = gapi.client.youtube.videos.list({
@@ -105,6 +133,60 @@
 
 
 
+=======
+
+                  if($("#button_change").prop("value") == "1 cписок"){
+                    var allData = [];
+
+                    var request2 = gapi.client.youtube.videos.list({
+                      part: 'statistics',
+                      id: concotanateID(),
+                    });
+
+                    function concotanateID() {
+                      var arr = [];
+                      for (var i = 0; i < results.items.length; i++) {
+                        arr.push(results.items[i].id.videoId);
+                      }
+                      return arr.join(',');
+                    }
+
+                    request2.execute(function(response) {
+
+                     for (let i = 0; i < results.items.length; i++) {
+                       allData[i] = {
+                         search: results.items[i],
+                         statistics: response.items[i].statistics
+                       };
+                     }
+
+                     allData.sort(function(a, b) {
+                       return parseFloat(b.statistics.viewCount) - parseFloat(a.statistics.viewCount);
+                     });
+
+                     $("#results").html("");
+                     $.each(allData, function(index, item) {
+                       $.get("tpl/item.html", function(data) {
+                           $("#results").append(
+                             tplawesome(data, [{"title":item.search.snippet.title,
+                                                "videoid":item.search.id.videoId,
+                                                "author":item.search.snippet.channelTitle,
+                                                "date":new Date(item.search.snippet.publishedAt).toLocaleString()}]));
+                             if(index == 19) createEvent();
+                       });
+                     });
+                    });
+                  }
+                  else{
+                    $("#results").html("");
+                    $.each(results.items, function(index, item) {
+                      $.get("tpl/item2.html", function(data) {
+                          $("#results").append(
+                            tplawesome(data, [{"title":item.snippet.title,}]));
+                      });
+                    });
+                  }
+>>>>>>> init
 
                   resetVideoHeight();
                });
@@ -114,6 +196,10 @@
         });
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> init
         function concotanateID() {
           var arr = [];
           for (var i = 0; i < data.items.length; i++) {
@@ -122,6 +208,20 @@
           return arr.join(',');
         }
 
+<<<<<<< HEAD
+=======
+        function createEvent() {
+          $(".video.w100").hide();
+          $(".video_title").each(function(index, item) {
+            $(this).on("click", function(){
+              if($(".video.w100").eq(index).is(':hidden'))
+              $(".video.w100").eq(index).show();
+              else $(".video.w100").eq(index).hide();
+            });
+          });
+        }
+
+>>>>>>> init
         function resetVideoHeight() {
             $(".video").css("height", $("#results").width() * 9/16);
         }
